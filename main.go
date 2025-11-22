@@ -26,8 +26,8 @@ type CLI struct {
 func main() {
 	cli := CLI{}
 	kong.Parse(&cli)
-
-	err := godotenv.Load()
+	dzjoinPath := initDirectory()
+	err := godotenv.Load(dzjoinPath)
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
@@ -43,7 +43,7 @@ func main() {
 	}
 	if cli.Clean {
 		if err := DeleteAtMods(dayzPath); err != nil {
-			log.Fatalf("failed deleting old mods: %w", err)
+			log.Fatalf("failed deleting old mods: %s", err)
 		}
 	}
 
@@ -222,7 +222,7 @@ func HandleWorkshop(resp *ServerResponse) error {
 
 	modIDs := resp.Data.Attributes.Details.ModIDs
 	if err := DownloadWorkshopMods(steamCmdPath, modIDs); err != nil {
-		log.Fatalf("failed downloading mod %w", err)
+		return fmt.Errorf("failed downloading mod %s", err)
 	}
 	modMap := BuildModMap(resp)
 
@@ -347,13 +347,23 @@ func CopyDir(src, dst string) error {
 		if err != nil {
 			return err
 		}
-		defer in.Close()
+		defer func() {
+			err := in.Close()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
 
 		out, err := os.OpenFile(target, os.O_CREATE|os.O_WRONLY, info.Mode())
 		if err != nil {
 			return err
 		}
-		defer out.Close()
+		defer func() {
+			err := out.Close()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
 
 		_, err = io.Copy(out, in)
 		return err
@@ -368,4 +378,19 @@ func getUserName() string {
 	}
 
 	return name
+}
+
+func initDirectory() string {
+	dir, err := os.UserConfigDir()
+	if err != nil {
+		log.Fatalf("cannot get config dir: %v", err)
+	}
+
+	path := filepath.Join(dir, "dzjoin")
+
+	if err := os.MkdirAll(path, 0700); err != nil {
+		log.Fatalf("cannot create %s: %v", path, err)
+	}
+
+	return path
 }
