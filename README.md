@@ -17,10 +17,23 @@ A lightweight DayZ helper tool that:
 - DayZ installed (Proton AppID 221100)
 
 ---
-
 ## Environment Variables
 
-Create a `.env` file or export the following:
+Create a `.env` file in:
+
+```
+~/.config/dzjoin/.env
+```
+
+This directory will be **created automatically** the first time you run `dzjoin`.  
+If you prefer to create it manually:
+
+```bash
+mkdir -p ~/.config/dzjoin
+chmod 700 ~/.config/dzjoin
+```
+
+Then place your `.env` file inside that directory, or export the variables globally:
 
 ```bash
 DZJOIN_SERVER="1234"                        # BattleMetrics server ID
@@ -30,8 +43,8 @@ DZJOIN_STEAMCMD_PATH="/home/user/Steam/steamcmd.sh"   # Optional: manual steamcm
 
 If `DZJOIN_STEAMCMD_PATH` is not set, dzjoin will:
 
-- Try to use `steamcmd` from PATH  
-- Otherwise exit with an error  
+- Look for `steamcmd` in your PATH  
+- If not found, it will exit with an error  
 
 ---
 
